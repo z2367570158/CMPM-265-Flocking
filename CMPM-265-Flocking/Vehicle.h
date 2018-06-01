@@ -17,20 +17,18 @@ class Vehicle {
 public:
 	CircleShape shape;
 	Vector2f desired;
+	Vector2f velocity;
 
 	Vehicle(float x, float y, Vector2f windowSize);
 
-	void Update(Vector2f target, bool hasTarget);
+	void Update();
 
 private:
 	Vector2f windowSize;
-	Vector2f velocity;
 	Vector2f acceleration;
 	float radius;
 	float maxForce;
 	float maxSpeed;
-
-
-	Vector2f SeekTarget(Vector2f target);
+	
 
 };

@@ -17,14 +17,9 @@ Vehicle::Vehicle(float x, float y, Vector2f windowSize)
 }
 
 // Our seek steering force algorithm
-void Vehicle::Update(Vector2f target, bool hasTarget) {
+void Vehicle::Update() {
 
-	desired = velocity;
-	if(hasTarget)
-		desired = SeekTarget(target);
-
-
-
+	desired = Normalize(desired)*maxSpeed;
 
 	if (shape.getPosition().x < 30)
 	{
@@ -57,16 +52,4 @@ void Vehicle::Update(Vector2f target, bool hasTarget) {
 
 	shape.setRotation(atan2f(velocity.y, velocity.x) * 180 / PI+90);
 	shape.move(velocity);
-}
-
-Vector2f Vehicle::SeekTarget(Vector2f target)
-{
-	Vector2f desired = target - shape.getPosition();
-	float mag = Magnitude(desired);
-	if (mag< 30)
-		desired *= mag / 30;
-	else
-		desired = Normalize(desired)*maxSpeed;
-
-	return desired;
 }

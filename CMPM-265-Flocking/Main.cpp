@@ -26,6 +26,13 @@ RectangleShape TargetMark;
 
 bool targetMode = false;
 bool addMode = false;
+bool separationMode = false;
+bool alignmentMode = false;
+bool cohesionMode = false;
+bool distanceMode = false;
+
+SoundBuffer BGMBuf;
+Sound BGMSound;
 
 
 int main()
@@ -48,7 +55,6 @@ int main()
 
 		for (Vehicle* v : vs.flock)
 			window.draw(v->shape);
-		
 		window.draw(hintText);
 		window.display();
 	}
@@ -60,6 +66,10 @@ void Initialize()
 {
 	font.loadFromFile("consola.ttf");
 	window.setKeyRepeatEnabled(false);
+
+	BGMBuf.loadFromFile("BGM.flac");
+	BGMSound.setBuffer(BGMBuf);
+	BGMSound.setLoop(true);
 
 	TargetMark.setSize(Vector2f(5, 5));
 	TargetMark.setFillColor(Color::Red);
@@ -84,18 +94,123 @@ void HandleInput()
 		{
 			targetMode = !targetMode;
 			vs.hasTarget = !vs.hasTarget;
-			hintText.setString("Target Mode: "+BoolToString(vs.hasTarget));
+			hintText.setString("Target Change "+ BoolToString(targetMode));
 		}
-		else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Equal)
+		else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Add)
 		{
+			separationMode = false;
+			alignmentMode = false;
+			cohesionMode = false;
 			addMode = !addMode;
 			hintText.setString("Add Mode: " + BoolToString(addMode));
 		}
-		else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Dash)
+		else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Subtract)
 		{
 			vs.RemoveVehicle();
 			hintText.setString("Remove Vehicle");
 		}
+		else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Equal)
+		{
+			if (separationMode)
+			{
+				vs.separationFactor++;
+				hintText.setString("Separation Factor " + to_string((int)vs.separationFactor));
+			}
+
+			if (alignmentMode)
+			{
+				vs.alignmentFactor++;
+				hintText.setString("Alignment Factor " + to_string((int)vs.alignmentFactor));
+			}
+
+			if (cohesionMode)
+			{
+				vs.cohesionFactor++;
+				hintText.setString("Cohesion Factor " + to_string((int)vs.cohesionFactor));
+			}
+
+			if (targetMode)
+			{
+				vs.targetFactor += 0.5;
+				hintText.setString("Target Factor " + to_string(vs.targetFactor));
+			}
+
+			if (distanceMode)
+			{
+				vs.closeDistance += 5;
+				hintText.setString("Affect Distance " + to_string((int)vs.closeDistance));
+			}
+		}
+		else if (event.type == Event::KeyPressed && event.key.code == Keyboard::Dash)
+		{
+			if (separationMode&&vs.separationFactor-1 >= 0)
+			{
+				vs.separationFactor--;
+				hintText.setString("Separation Factor " + to_string((int)vs.separationFactor));
+			}
+			
+			if (alignmentMode&&vs.alignmentFactor-1 >= 0)
+			{
+				vs.alignmentFactor--;
+				hintText.setString("Alignment Factor " + to_string((int)vs.alignmentFactor));
+			}
+
+			if (cohesionMode&&vs.cohesionFactor-1 >= 0)
+			{
+				vs.cohesionFactor--;
+				hintText.setString("Cohesion Factor " + to_string((int)vs.cohesionFactor));
+			}
+
+			if (targetMode)
+			{
+				vs.targetFactor-= 0.5;
+				hintText.setString("Target Factor " + to_string(vs.targetFactor));
+			}
+
+
+			if (distanceMode&&vs.closeDistance - 5 >= 0)
+			{
+				vs.closeDistance -= 5;
+				hintText.setString("Affect Distance " + to_string((int)vs.closeDistance));
+			}
+		}
+		else if (event.type == Event::KeyPressed && event.key.code == Keyboard::S)
+		{
+			separationMode = !separationMode;
+			alignmentMode = false;
+			cohesionMode = false;
+			distanceMode = false;
+			hintText.setString("Separation Change "+ BoolToString(separationMode));
+		}
+		else if (event.type == Event::KeyPressed && event.key.code == Keyboard::A)
+		{
+			separationMode = false;
+			alignmentMode = !alignmentMode;
+			cohesionMode = false;
+			distanceMode = false;
+			hintText.setString("Alignment Change " + BoolToString(alignmentMode));
+		}
+		else if (event.type == Event::KeyPressed && event.key.code == Keyboard::C)
+		{
+			separationMode = false;
+			alignmentMode = false;
+			cohesionMode = !cohesionMode;
+			distanceMode = false;
+			hintText.setString("Cohesion Change " + BoolToString(cohesionMode));
+		}
+		else if (event.type == Event::KeyPressed && event.key.code == Keyboard::D)
+		{
+			distanceMode = !distanceMode;
+			separationMode = false;
+			alignmentMode = false;
+			cohesionMode = false;
+			hintText.setString("Distance Change " + BoolToString(distanceMode));
+		}
+		else if (event.type == Event::KeyPressed && event.key.code == Keyboard::P)
+		{
+			BGMSound.play();
+		}
+
 	}
 
 	if (Mouse::isButtonPressed(Mouse::Left))
@@ -107,6 +222,9 @@ void HandleInput()
 			TargetMark.setPosition(vs.target);
 		}
 
+	}
+	if (Mouse::isButtonPressed(Mouse::Right))
+	{
 		if (addMode)
 		{
 			vs.AddVehicle(Mouse::getPosition(window).x, Mouse::getPosition(window).y);
